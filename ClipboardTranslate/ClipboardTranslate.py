@@ -139,6 +139,23 @@ def clipboard_thread():
 
 
 
+def check_library(word: str) -> str | None:
+
+    library = opr.load_json("ClipboardTranslate", os.path.dirname(os.path.abspath(__file__)), "library.json")
+
+    if word in library:
+        return library[word]
+
+    return None
+
+def write_library(word: str, translation: str) -> None:
+
+    library = opr.load_json("ClipboardTranslate", os.path.dirname(os.path.abspath(__file__)), "library.json")
+
+    library[word] = translation
+
+    opr.save_json("ClipboardTranslate", os.path.dirname(os.path.abspath(__file__)), library, "library.json")
+
 
 def process_image(img: Image.Image):
     
@@ -166,14 +183,13 @@ def _process_image(img: Image.Image):
 
     for r in recognition_results:
 
-# TODO: Add a library caching logic here for saving and retrieving already translated text
-
-        translated = TRANSLATOR.translate(r.Text)
+        translated = check_library(r.Text)
 
         if translated is None:
-            continue
+            translated = TRANSLATOR.translate(r.Text)
+            write_library(r.Text, translated)
 
-        result = LinguistResult(r.QuadBox, translated, r.Confidence)
+        result = LinguistResult(r.QuadBox, r.Text, translated, r.Confidence)
         translation_results.append(result)
 
     final_results = translation_results[::-1]
@@ -186,23 +202,6 @@ def _process_image(img: Image.Image):
 
 def send_via_tcp(list_of_linguist_results: list[LinguistResult]) -> str:
 
-    """
-    
-        Payload structure:
-        {
-            "type": "clipboardtranslate",
-            "timestamp": str,
-            "results": [
-                {
-                    "QuadBox": [x1, y1, x2, y2],
-                    "Text": str,
-                    "Confidence": float
-                }
-            ]
-        }
-    
-    """
-
     timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
 
     payload = {
@@ -213,8 +212,8 @@ def send_via_tcp(list_of_linguist_results: list[LinguistResult]) -> str:
 
     for linguist_result in list_of_linguist_results:
         payload["results"].append({
-            "QuadBox": linguist_result.QuadBox.to_flat_list,
-            "Text": linguist_result.Text,
+            "Translated": linguist_result.Translated,
+            "Original": linguist_result.Original,
             "Confidence": linguist_result.Confidence
         })
 
@@ -272,6 +271,18 @@ def load_models():
 def main():
 
     
+
+    word = check_library("Hello")
+
+    if word is not None:
+        print(f"Word {word} is already in library")
+    else:
+        print(f"Word {word} is not in library")
+        write_library("Hello", "Hi")
+
+    input("End of test")
+
+
     load_models()
 
 
