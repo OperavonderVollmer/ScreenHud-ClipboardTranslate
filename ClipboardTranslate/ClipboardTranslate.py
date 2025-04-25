@@ -289,9 +289,7 @@ def main():
     finally:
         CLIPBOARD_STOP_SIGN.set()
     
-
-    CLIPBOARD_THREAD.join()
-
+    
 
 
 
