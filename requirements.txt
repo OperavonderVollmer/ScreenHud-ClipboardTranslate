@@ -1,0 +1,7 @@
+dotenv
+setuptools
+git+https://github.com/OperavonderVollmer/OperaPowerRelay@main
+git+https://github.com/OperavonderVollmer/OPR-Translate@main
+git+https://github.com/OperavonderVollmer/OPR-DetectRecog@main
+
+
