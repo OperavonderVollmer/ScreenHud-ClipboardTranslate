@@ -272,17 +272,6 @@ def main():
 
     
 
-    word = check_library("Hello")
-
-    if word is not None:
-        print(f"Word {word} is already in library")
-    else:
-        print(f"Word {word} is not in library")
-        write_library("Hello", "Hi")
-
-    input("End of test")
-
-
     load_models()
 
 
